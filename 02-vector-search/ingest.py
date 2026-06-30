@@ -1,11 +1,20 @@
 import requests
+<<<<<<< HEAD
 
 def load_faq_data():
     docs_url = "https://datatalks.club/faq/json/courses.json"
+=======
+from minsearch import Index
+
+
+def load_faq_data():
+    docs_url = 'https://datatalks.club/faq/json/courses.json'
+>>>>>>> cf2ba699ead02da2c2258f2d0fca81c9a0046945
     response = requests.get(docs_url)
     courses_raw = response.json()
 
     documents = []
+<<<<<<< HEAD
     url_prefix = "https://datatalks.club/faq"
 
     for course in courses_raw:
@@ -16,3 +25,28 @@ def load_faq_data():
         documents.extend(course_data)
 
     return documents
+=======
+    url_prefix = 'https://datatalks.club/faq'
+
+    for course in courses_raw:
+        course_url = f'{url_prefix}{course["path"]}'
+        course_response = requests.get(course_url)
+        course_response.raise_for_status()
+        course_data = course_response.json()
+
+        documents.extend(course_data)
+
+    for doc in documents:
+        doc["doc_id"] = doc.pop("id") #we do this so we can add the id key to sqlite so we don't reimport the same records
+
+    return documents
+
+
+def build_index(documents):
+    index = Index(
+        text_fields=['question', 'section', 'answer'],
+        keyword_fields=['course']
+    )
+    index.fit(documents)
+    return index
+>>>>>>> cf2ba699ead02da2c2258f2d0fca81c9a0046945
