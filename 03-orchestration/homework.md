@@ -28,6 +28,14 @@ Below are the answers and detailed explanations for the homework questions.
 
 **Explanation:** General LLMs rely on their pre-training data, which may be outdated or lack specific syntax for proprietary tools. Kestra's AI Copilot utilizes context engineering (via RAG) to inject up-to-date, official Kestra plugin documentation directly into the prompt, ensuring the generated YAML is accurate and syntactically correct.
 
+```mermaid
+graph LR
+    A[ChatGPT] -->|"Trained on general data"| B[Generic Responses]
+    C[Kestra AI Copilot] -->|"Access to current plugin docs"| D[Accurate Kestra Flows]
+    
+    style C fill:#c8e6c9,stroke:#2e7d32
+    style D fill:#c8e6c9,stroke:#2e7d32
+```
 ---
 
 ### Question 2: RAG vs No RAG
@@ -39,6 +47,17 @@ Below are the answers and detailed explanations for the homework questions.
 
 **Explanation:** Without Retrieval-Augmented Generation (RAG), the LLM is forced to rely solely on its internal weights. If the specific release notes for Kestra 1.1 were not heavily represented in its training data, the model will hallucinate or provide generic answers. RAG solves this by fetching the exact, up-to-date release notes and grounding the model's response in factual context.
 
+```mermaid
+graph TD
+    A[Non-RAG Response] -->|"No context provided"| B[Model guesses from training]
+    B --> C[Vague or fabricated answers]
+    
+    D[RAG Response] -->|"Context provided"| E[Accurate, specific answers]
+    
+    style B fill:#ffcdd2,stroke:#c62828
+    style C fill:#ffcdd2,stroke:#c62828
+    style E fill:#c8e6c9,stroke:#2e7d32
+```
 ---
 
 ### Question 3: Token usage — short summary
