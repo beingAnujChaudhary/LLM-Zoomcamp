@@ -81,5 +81,22 @@ Below are the answers and detailed explanations for the homework questions.
 
 **Explanation:** While AI agents are powerful for dynamic, exploratory tasks, they introduce non-determinism (the LLM might choose different tools or paths on different runs). In highly regulated industries like finance, strict auditability and 100% predictable execution paths are mandatory. Traditional, explicitly defined task-based workflows guarantee that the exact same steps are executed in the exact same order every time.
 
+```mermaid
+flowchart TD
+    A[Production Workflow<br/>Strict Compliance] --> B{What's Best?}
+    
+    B -->|❌ Wrong| C[Always use AI agents]
+    B -->|❌ Wrong| D[Only RAG without agents]
+    B -->|❌ Wrong| E[Only web search tools]
+    B -->|✅ Correct| F[Traditional task-based workflows]
+    
+    F --> G[Predictable ✅]
+    F --> H[Auditable ✅]
+    F --> I[Repeatable ✅]
+    
+    style F fill:#c8e6c9,stroke:#2e7d32
+    style G fill:#c8e6c9,stroke:#2e7d32
+    style H fill:#c8e6c9,stroke:#2e7d32
+    style I fill:#c8e6c9,stroke:#2e7d32
 ---
 
