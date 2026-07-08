@@ -1,39 +1,51 @@
-volumes:
-  kestra_postgres_data:
-    driver: local
-  kestra_data:
-    driver: local
-  kestra_tmp:
-    driver: local
-
 services:
   kestra_postgres:
-    image: postgres:18
-    volumes:
-      - kestra_postgres_data:/var/lib/postgresql
+    image: postgres:16
+    container_name: kestra_postgres
+
+    restart: unless-stopped
+
     environment:
       POSTGRES_DB: kestra
       POSTGRES_USER: kestra
       POSTGRES_PASSWORD: k3str4
+
+    volumes:
+      - kestra_postgres_data:/var/lib/postgresql/data
+
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
-      interval: 30s
-      timeout: 10s
+      test: ["CMD-SHELL", "pg_isready -U kestra -d kestra"]
+      interval: 10s
+      timeout: 5s
       retries: 10
 
   kestra:
     image: kestra/kestra:v1.3.21
-    pull_policy: always
-    user: "root"
+    container_name: kestra
+
+    restart: unless-stopped
+
+    user: root
+
     command: server standalone
-    volumes:
-      - kestra_data:/app/storage
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /tmp/kestra-wd:/tmp/kestra-wd
+
+    depends_on:
+      kestra_postgres:
+        condition: service_healthy
+
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+
     environment:
+      # Raw API key (used by global AI provider)
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+
+      # Kestra Secrets (used by {{ secret(...) }})
       SECRET_GEMINI_API_KEY: ${SECRET_GEMINI_API_KEY}
-      SECRET_TAVILY_API_KEY: ${SECRET_TAVILY_API_KEY}
       SECRET_OPENAI_API_KEY: ${SECRET_OPENAI_API_KEY}
+      SECRET_TAVILY_API_KEY: ${SECRET_TAVILY_API_KEY}
+
       KESTRA_CONFIGURATION: |
         datasources:
           postgres:
@@ -41,31 +53,47 @@ services:
             driverClassName: org.postgresql.Driver
             username: kestra
             password: k3str4
+
         kestra:
-          server:
-            basicAuth:
-              username: "admin@kestra.io"
-              password: Admin1234!
           repository:
             type: postgres
-          storage:
-            type: local
-            local:
-              basePath: "/app/storage"
+
           queue:
             type: postgres
+
+          storage:
+            type: local
+
+            local:
+              basePath: /app/storage
+
           tasks:
             tmpDir:
               path: /tmp/kestra-wd/tmp
-          url: http://localhost:8080/
+
+          server:
+            basicAuth:
+              enabled: true
+              username: admin@kestra.io
+              password: Admin1234!
+
+          url: http://localhost:8080
+
           ai:
             type: gemini
+
             gemini:
               model-name: gemini-2.5-flash
               api-key: ${GEMINI_API_KEY}
-    ports:
-      - "8080:8080"
-      - "8081:8081"
-    depends_on:
-      kestra_postgres:
-        condition: service_started
+
+    volumes:
+      - kestra_data:/app/storage
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp/kestra-wd:/tmp/kestra-wd
+
+volumes:
+  kestra_postgres_data:
+    driver: local
+
+  kestra_data:
+    driver: local
